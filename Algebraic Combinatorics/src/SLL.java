@@ -43,6 +43,22 @@ public class SLL<E> {
 		}
 	}
 	
+	public SLLNode<E> deleteFirst(){
+		if(size==0){
+			return null;
+		} else if(size==1){
+			SLLNode<E> temp = head;
+			head = null; tail = null;
+			size = 0;
+			return temp;
+		} else {
+			SLLNode<E> temp = head;
+			head = head.next;
+			size--;
+			return temp;
+		}
+	}
+	
 	public SLLNode<E> delete(E elem1){
 		SLLNode<E> cur = head;
 		SLLNode<E> prev = null;
@@ -135,9 +151,7 @@ public class SLL<E> {
 			System.out.println("Fuck");
 		}
 		Integer k = 1;
-		Integer l = 1;
-		if(k.equals(l)){
-			System.out.println("OK");
-		}
+		Integer l = 2;
+		System.out.println(k.compareTo(l));
 	}
 }
