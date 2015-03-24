@@ -128,4 +128,13 @@ public class DLLC<E extends Comparable<E>> implements Comparable<DLLC<E>> {
 			return -1;
 		}
 	}
+	
+	public String toString(){
+		String output = "[";
+		DLLCNode<E> cur = head;
+		for(int i = 0; i<size; i++){
+			output += cur.elem + ", ";
+			cur = cur.next;
+		} return output.substring(0,output.length()-2)+"]";
+	}
 }

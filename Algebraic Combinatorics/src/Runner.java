@@ -3,7 +3,7 @@ public class Runner {
 
 	public static void main(String[] args){
 		Runner runner = new Runner();
-		int[] ints = new int[] {6,5,4,3,2,1};
+		int[] ints = new int[] {2,6,7,1,3,8,5,10,9,4};
 		for(int i = 0; i< ints.length; i++){
 			ints[i] = ints[i]-1;
 		}
@@ -36,22 +36,14 @@ public class Runner {
 			cur3 = cur3.next;
 		} System.out.println("\n\n\n");
 		
-		DLL<Integer> adjTrans = runner.generateAdjTrans(transpositions);
-		DLLNode<Integer> cur4 = adjTrans.head;
+		DLLC<Integer> adjTrans = runner.generateAdjTrans(transpositions);
+		DLLCNode<Integer> cur4 = adjTrans.head;
 		for(int i = 0; i<adjTrans.size; i++){
 			System.out.print((cur4.elem+1)+" ");
 			cur4 = cur4.next;
-		} SLL<DLL<Integer>> finalList = runner.tryToDecrease(adjTrans);
-		SLLNode<DLL<Integer>> cur5 = finalList.head;
+		} AVL<DLLC<Integer>> finalList = runner.tryToDecrease(adjTrans);
 		System.out.println("There are "+finalList.size+ " decompositions.");
-		for(int i = 0; i<finalList.size; i++){
-			//System.out.print("\nVersion "+(i+1)+": ");
-			DLLNode<Integer> cur6 = cur5.elem.head;
-			for(int j = 0; j<cur5.elem.size; j++){
-				//System.out.print((cur6.elem+1)+" ");
-				cur6 = cur6.next;
-			} cur5 = cur5.next;
-		}
+		//System.out.println(finalList);
 	}
 	
 	public SLL<SLL<Integer>> generateCycles(int[] p){
@@ -87,6 +79,166 @@ public class Runner {
 		} return sll;
 	}
 	
+	public DLLC<Integer> generateAdjTrans(SLL<transP> transps){
+		DLLC<Integer> adjTrans = new DLLC<Integer>();
+		SLLNode<transP> cur = transps.head;
+		for(int i = 0; i<transps.size; i++){
+			int start = cur.elem.a;
+			int end = cur.elem.b;
+			for(int j = start; j<end; j++){
+				System.out.print((j+1) + " ");
+				if(adjTrans.size>0 && adjTrans.tail.elem.equals(j)){
+					adjTrans.deleteLast();
+				} else {
+					adjTrans.addLast(j);
+				}
+			} for(int j = end-2; j>= start; j--){
+				System.out.print((j+1) + " ");
+				adjTrans.addLast(j);
+			} cur = cur.next;
+		} System.out.println();
+		return adjTrans;
+	}
+	
+	public AVL<DLLC<Integer>> tryToDecrease(DLLC<Integer> cycle){
+		if(cycle.size==0){
+			return new AVL<DLLC<Integer>>();
+		} System.out.print("\nStart cycle: ");
+		DLLCNode<Integer> print = cycle.head;
+		for(int i = 0; i<cycle.size; i++){
+			System.out.print(print.elem+1+" ");
+			print = print.next;
+		}
+		AVL<DLLC<Integer>> trash = new AVL<DLLC<Integer>>();
+		AVL<DLLC<Integer>> queue = new AVL<DLLC<Integer>>();
+		queue.add(cycle);
+		trash.add(cycle);
+		int counter = 0;
+		while(queue.size>0){
+			counter++;
+			if(queue.size%10000==0 || counter % 1000 == 0){
+				System.out.print("\nQueue size: "+queue.size+" Length: "+trash.head.elem.size+" Trash size: "+trash.size);
+			}
+			DLLC<Integer> pop = queue.pop();
+			/**System.out.print("");
+			DLLNode<Integer> poprun = pop.head;
+			for(int i = 0; i<pop.size; i++){
+				System.out.print((poprun.elem+1) + " ");
+				poprun = poprun.next;
+			}**/
+			DLLCNode<Integer> cur = pop.head;
+			int i;
+			for(i = 0; i<pop.size-2; i++){
+				if(cur.elem.equals(cur.next.elem)){
+					DLLC<Integer> dll = new DLLC<Integer>();
+					DLLCNode<Integer> tempCur = pop.head;
+					for(int j = 0; j<i; j++){
+						dll.addLast(tempCur.elem);
+						tempCur = tempCur.next;
+					} tempCur = tempCur.next;
+					tempCur = tempCur.next;
+					for(int j = i+2; j<pop.size; j++){
+						dll.addLast(tempCur.elem);
+						tempCur = tempCur.next;
+					} System.out.println("\nDown to size "+dll.size);
+					return tryToDecrease(dll);
+				} if(cur.elem - cur.next.elem > 1 || cur.next.elem - cur.elem > 1){
+					DLLC<Integer> temp = new DLLC<Integer>();
+					DLLCNode<Integer> tempCur = pop.head;
+					for(int j = 0; j<pop.size; j++){
+						temp.addLast(tempCur.elem);
+						tempCur = tempCur.next;
+					} tempCur = temp.head; 
+					for(int j = 0; j<i; j++){
+						tempCur = tempCur.next;
+					} DLLCNode<Integer> tempNode = tempCur.next;
+					if(tempCur.prev!=null){
+						tempCur.prev.cnext(tempNode);
+					} else {
+						temp.head = tempNode;
+					} if(tempNode.next!=null){
+						tempNode.next.cprev(tempCur);
+					} else {
+						temp.tail = tempCur;
+					} tempCur.cnext(tempNode.next);
+					tempNode.cprev(tempCur.prev);
+					tempCur.cprev(tempNode);
+					tempNode.cnext(tempCur);
+					if(!trash.contains(temp)){
+						if(!queue.contains(temp)){
+							queue.add(temp);
+						} trash.add(temp);
+					}
+				} if((cur.next.elem-cur.elem==1 && cur.next.next.elem-cur.next.elem==-1)
+				  || (cur.next.elem-cur.elem==-1 && cur.next.next.elem-cur.next.elem==1)){
+					DLLC<Integer> temp = new DLLC<Integer>();
+					DLLCNode<Integer> tempCur = pop.head;
+					for(int j = 0; j<pop.size; j++){
+						temp.addLast(tempCur.elem);
+						tempCur = tempCur.next;
+					} tempCur = temp.head; 
+					for(int j = 0; j<i; j++){
+						tempCur = tempCur.next;
+					} tempCur.celem(tempCur.elem + (tempCur.next.elem-tempCur.elem));
+					tempCur.next.celem(tempCur.next.next.elem + (tempCur.elem-tempCur.next.elem));
+					int tempInt = tempCur.elem + 1 - 1;
+					tempCur.next.next.celem(tempInt);
+					if(!trash.contains(temp)){
+						if(!queue.contains(temp)){
+							queue.add(temp);
+						} trash.add(temp);
+					}
+				} cur = cur.next;
+			} if(cur.elem - cur.next.elem > 1 || cur.next.elem - cur.elem > 1){
+				DLLC<Integer> temp = new DLLC<Integer>();
+				DLLCNode<Integer> tempCur = pop.head;
+				for(int j = 0; j<pop.size; j++){
+					temp.addLast(tempCur.elem);
+					tempCur = tempCur.next;
+				} tempCur = temp.head; 
+				for(int j = 0; j<i; j++){
+					tempCur = tempCur.next;
+				} DLLCNode<Integer> tempNode = tempCur.next;
+				if(tempCur.prev!=null){
+					tempCur.prev.cnext(tempNode);
+				} else {
+					temp.head = tempNode;
+				} if(tempNode.next!=null){
+					tempNode.next.cprev(tempCur);
+				} else {
+					temp.tail = tempCur;
+				} tempCur.cnext(tempNode.next);
+				tempNode.cprev(tempCur.prev);
+				tempCur.cprev(tempNode);
+				tempNode.cnext(tempCur);
+				if(!trash.contains(temp)){
+					if(!queue.contains(temp)){
+						queue.add(temp);
+					} trash.add(temp);
+				}
+			} if(cur.elem.equals(cur.next.elem)){
+				DLLC<Integer> temp = new DLLC<Integer>();
+				cur = pop.head;
+				for(int j = 0; j<pop.size-2; j++){
+					temp.addLast(cur.elem);
+					cur = cur.next;
+				} return tryToDecrease(temp);
+			}
+		} //SLLNode<DLL<Integer>> trashCur = trash.head;
+		System.out.println("\nTrash size: "+trash.size);
+		/**for(int i = 0; i<trash.size; i++){
+			DLLNode<Integer> trashCur2 = trashCur.elem.head;
+			System.out.println();
+			for(int j = 0; j <trashCur.elem.size; j++){
+				System.out.print(trashCur2.elem+1+" ");
+				trashCur2 = trashCur2.next;
+			} trashCur = trashCur.next;
+		}**/
+		System.out.println("There were "+counter + " iterations of the while loop.");
+		return trash;
+	}
+	
+	/*** Old Stuff
 	public DLL<Integer> generateAdjTrans(SLL<transP> transps){
 		DLL<Integer> adjTrans = new DLL<Integer>();
 		SLLNode<transP> cur = transps.head;
@@ -108,8 +260,6 @@ public class Runner {
 		return adjTrans;
 	}
 	
-	
-	
 	public SLL<DLL<Integer>> tryToDecrease(DLL<Integer> cycle){
 		System.out.print("\nStart cycle: ");
 		DLLNode<Integer> print = cycle.head;
@@ -128,12 +278,12 @@ public class Runner {
 				System.out.print("\nQueue size: "+queue.size+" Length: "+trash.head.elem.size+" Trash size: "+trash.size);
 			}
 			DLL<Integer> pop = queue.deleteFirst();
-			/**System.out.print("");
+			System.out.print("");
 			DLLNode<Integer> poprun = pop.head;
 			for(int i = 0; i<pop.size; i++){
 				System.out.print((poprun.elem+1) + " ");
 				poprun = poprun.next;
-			}**/
+			}
 			DLLNode<Integer> cur = pop.head;
 			int i;
 			for(i = 0; i<pop.size-2; i++){
@@ -234,15 +384,15 @@ public class Runner {
 			}
 		} //SLLNode<DLL<Integer>> trashCur = trash.head;
 		System.out.println("\nTrash size: "+trash.size);
-		/**for(int i = 0; i<trash.size; i++){
+		for(int i = 0; i<trash.size; i++){
 			DLLNode<Integer> trashCur2 = trashCur.elem.head;
 			System.out.println();
 			for(int j = 0; j <trashCur.elem.size; j++){
 				System.out.print(trashCur2.elem+1+" ");
 				trashCur2 = trashCur2.next;
 			} trashCur = trashCur.next;
-		}**/
+		}
 		System.out.println("There were "+counter + " iterations of the while loop.");
 		return trash;
-	}	
+	}	***/
 }

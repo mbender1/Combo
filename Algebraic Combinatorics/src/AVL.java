@@ -31,7 +31,6 @@ public class AVL<E extends Comparable<E>> {
 			} add.cprev(cur);
 			while(cur!=null){
 				cur.height = max(getHeight(cur.left), getHeight(cur.right))+1;
-				System.out.println("Hi: "+e+" This: "+cur.elem+" Height: "+cur.height+" HeightDif: "+(getHeight(cur.left)-getHeight(cur.right)));
 				if(getHeight(cur.left)-getHeight(cur.right)>1 || getHeight(cur.right)-getHeight(cur.left)>1){
 					AVLNode<E> z = cur;
 					AVLNode<E> y = tallerChild(cur);
@@ -54,17 +53,18 @@ public class AVL<E extends Comparable<E>> {
 			}
 		} if(cur == null){
 			return null;
-		} else if(cur.left==cur.right){
+		} else if(size == 1){
+			temp = cur.elem;
+			head = null;
+		} else if(cur.left==cur.right){ //both null, so leaf
+			temp = cur.elem;
 			cur = cur.prev;
 			if(cur.left.elem.equals(e)){
-				temp = cur.left.elem;
 				cur.left = null;
 			} else {
-				temp = cur.right.elem;
 				cur.right = null;
 			} while(cur!=null){
 				cur.height = max(getHeight(cur.left), getHeight(cur.right))+1;
-				System.out.println("Bye: "+e+" This: "+cur.elem+" Height: "+cur.height+" HeightDif: "+(getHeight(cur.left)-getHeight(cur.right)));
 				if(getHeight(cur.left)-getHeight(cur.right)>1 || getHeight(cur.right)-getHeight(cur.left)>1){
 					AVLNode<E> z = cur;
 					AVLNode<E> y = tallerChild(cur);
@@ -88,29 +88,42 @@ public class AVL<E extends Comparable<E>> {
 			} found.celem(cur.elem);
 			if(cur.prev.left == cur){
 				cur = cur.prev;
-				cur.cleft(cur.left.left);
-				if(cur.left!=null){
+				if(cur.left.right==null){
+					cur.cleft(cur.left.left);
+				} else {
+					cur.cleft(cur.left.right);
+				} if(cur.left!=null){
 					cur.left.cprev(cur);
 				}
 			} else {
 				cur = cur.prev;
-				cur.cright(cur.right.right);
-				if(cur.right!=null){
+				if(cur.right.left==null){
+					cur.cright(cur.right.right);
+				} else {
+					cur.cright(cur.right.left);
+				} if(cur.right!=null){
 					cur.right.cprev(cur);
 				}
 			}	
 			while(cur!=null){
 				cur.height = max(getHeight(cur.left), getHeight(cur.right))+1;
-				System.out.println("Bye: "+e+" This: "+cur.elem+" Height: "+cur.height+" HeightDif: "+(getHeight(cur.left)-getHeight(cur.right)));
 				if(getHeight(cur.left)-getHeight(cur.right)>1 || getHeight(cur.right)-getHeight(cur.left)>1){
 					AVLNode<E> z = cur;
 					AVLNode<E> y = tallerChild(cur);
 					AVLNode<E> x = tallerChild(y);
 					restructure(x,y,z);
-				} cur = cur.prev;
+				} else {
+					cur = cur.prev;
+				}
 			}
-		}
+		} size--;
 		return temp;
+	}
+	
+	public E pop(){
+		if(size==0){
+			return null;
+		} return delete(head.elem);
 	}
 	
 	private void restructure(AVLNode<E> x, AVLNode<E> y, AVLNode<E> z){
@@ -195,7 +208,24 @@ public class AVL<E extends Comparable<E>> {
 		}
 	}
 	
-	private void printTree(AVLNode<E> cur){
+	public Boolean contains(E e){
+		if(size==0){
+			return false;
+		} else {
+			AVLNode<E> cur = head;
+			while(cur!=null){
+				if(cur.elem.equals(e)){
+					return true;
+				} else if(cur.elem.compareTo(e)<0){
+					cur = cur.right;
+				} else {
+					cur = cur.left;
+				}
+			} return false;
+		}
+	}
+	
+	public void printTree(AVLNode<E> cur){
 		if(cur.left!=null){
 			printTree(cur.left);
 		} System.out.print(cur.elem+" ");
@@ -204,7 +234,7 @@ public class AVL<E extends Comparable<E>> {
 		}
 	}
 	
-	private void printTreeLevels(){
+	public void printTreeLevels(){
 		SLL<AVLNode<E>> queue = new SLL<AVLNode<E>>();
 		queue.add(head);
 		while(queue.size!=0){
@@ -219,5 +249,19 @@ public class AVL<E extends Comparable<E>> {
 			}
 			queue.deleteFirst();
 		}
+	}
+	
+	private String toStringRec(AVLNode<E> cur, String output){
+		if(cur.left!=null){
+			output = toStringRec(cur.left, output);
+		} output += cur.elem + ", ";
+		if(cur.right!=null){
+			output = toStringRec(cur.right, output);
+		} return output;
+	}
+	
+	public String toString(){
+		String output = toStringRec(head,"");
+		return output.substring(0, output.length()-2);
 	}
 }
